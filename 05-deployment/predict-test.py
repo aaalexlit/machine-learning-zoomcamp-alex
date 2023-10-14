@@ -1,12 +1,13 @@
 import requests
 
-URL = "http://localhost:9696/predict"
+HOST = 'churn-serving-evn.eba-jvi9m5pe.us-west-2.elasticbeanstalk.com'
+URL = f"http://{HOST}/predict"
 
 
 customer = {
     "gender": "female",
     "seniorcitizen": 0,
-    "partner": "no",
+    "partner": "yes",
     "dependents": "no",
     "phoneservice": "no",
     "multiplelines": "no_phone_service",
@@ -20,9 +21,9 @@ customer = {
     "contract": "month-to-month",
     "paperlessbilling": "yes",
     "paymentmethod": "electronic_check",
-    "tenure": 1,
-    "monthlycharges": 50.85,
-    "totalcharges": 50.85,
+    "tenure": 12,
+    "monthlycharges": 20.85,
+    "totalcharges": (12 * 20.85),
 }
 response = requests.post(URL, json=customer, timeout=10).json()
 print(response)
