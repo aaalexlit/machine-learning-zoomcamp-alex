@@ -1,0 +1,7 @@
+services:
+  score-credit:
+    build:
+      context: .
+    platform: linux/amd64
+    ports:
+      - 9696:9696
