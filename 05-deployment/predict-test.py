@@ -1,6 +1,6 @@
 import requests
 
-HOST = 'churn-serving-evn.eba-jvi9m5pe.us-west-2.elasticbeanstalk.com'
+HOST = 'ip172-18-0-100-cknn184snmng008sq4p0-9696.direct.labs.play-with-docker.com'
 URL = f"http://{HOST}/predict"
 
 
