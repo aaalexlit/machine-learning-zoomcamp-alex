@@ -2,6 +2,10 @@
 .pyc
 __pycache__
 
-08-deep-learning/*.h5
+*.h5
+*.tflite
 
 data/
+pants.jpg
+
+.ipynb_checkpoints
