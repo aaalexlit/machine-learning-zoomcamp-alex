@@ -5,7 +5,9 @@ from io import BytesIO
 from urllib import request
 
 import numpy as np
-import tensorflow.lite as tflite
+
+# import tensorflow.lite as tflite
+import tflite_runtime.interpreter as tflite
 from PIL import Image
 
 
@@ -54,10 +56,12 @@ def read_img_from_file(file_name):
 def predict(url):
     X = read_img_from_url(url=url)
     interpreter = tflite.Interpreter(model_path="clothing-model.tflite")
-    predictions_lite = interpreter.get_signature_runner("serving_default")(input_8=X)["dense_7"]
-    return dict(zip(classes, predictions_lite[0]))
+    predictions_lite = interpreter.get_signature_runner("serving_default")(input_8=X)[
+        "dense_7"
+    ]
+    return dict(zip(classes, predictions_lite[0].tolist()))
 
 
 def lambda_handler(event, context):
-    url = event['url']
+    url = event["url"]
     return predict(url)
