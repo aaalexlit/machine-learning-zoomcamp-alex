@@ -1,0 +1,9 @@
+services:
+  lambda:
+    platform: linux/amd64
+    build: 
+      context: .
+    volumes:
+      - ~/.aws:/root/.aws
+    ports:
+      - 8080:8080
