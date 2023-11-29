@@ -6,17 +6,17 @@ LAMBDA_BASIC_POLICY_ARN=arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecu
 
 REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${FUNCTION_NAME}'].id | [0]" --output text)
 
-
+echo 'Removing API Gateway'
 aws apigateway delete-rest-api --rest-api-id $REST_API_ID
 
-# remove the lambda
+echo 'Removing the Lambda'
 aws lambda delete-function --function-name $FUNCTION_NAME
 
-# delete the role (if needed)
+echo 'Deleting the role created for Lambda'
 aws iam detach-role-policy --role-name $LAMBDA_ROLE_NAME --policy-arn $LAMBDA_BASIC_POLICY_ARN
 aws iam delete-role --role-name $LAMBDA_ROLE_NAME
 
-# delete ECR repo
+echo 'Deleting ECR repo and all the images'
 aws ecr batch-delete-image \
     --repository-name $REPO \
     --image-ids imageTag=$TAG > /dev/null
