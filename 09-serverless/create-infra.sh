@@ -20,6 +20,8 @@ REMOTE_URI=${PREFIX}:${TAG}
 LAMBDA_ROLE_NAME=lambda-basic
 FUNCTION_NAME=clothing-classification
 
+TEST_REQUEST_BODY='{"url": "http://bit.ly/mlbookcamp-pants"}'
+
 # Exit the script if any command returns a non-zero status
 set -e
 
@@ -82,7 +84,7 @@ aws lambda invoke \
     --cli-binary-format raw-in-base64-out \
     --function-name $FUNCTION_NAME \
     --cli-binary-format raw-in-base64-out \
-    --payload '{"url": "http://bit.ly/mlbookcamp-pants"}' \
+    --payload "${TEST_REQUEST_BODY}" \
     response.json > /dev/null
 
 echo 'Creating new API Gateway'
@@ -150,7 +152,7 @@ aws apigateway test-invoke-method \
     --rest-api-id $REST_API_ID \
     --resource-id $PREDICT_RESOURCE_ID \
     --http-method POST \
-    --body '{"url": "http://bit.ly/mlbookcamp-pants"}' > api_gateway_test_result.json
+    --body "${TEST_REQUEST_BODY}" > api_gateway_test_result.json
 
 echo 'Deploying the API'
 aws apigateway create-deployment \
@@ -161,6 +163,6 @@ aws apigateway create-deployment \
 
 echo 'Testing the deployed API'
 curl -X POST "https://${REST_API_ID}.execute-api.${REGION}.amazonaws.com/test/predict" \
-    --data '{"url": "http://bit.ly/mlbookcamp-pants"}'
+    --data "${TEST_REQUEST_BODY}"
 
 echo '\nSuccess'
