@@ -1,0 +1,15 @@
+version: '3'
+services:
+  tf_serving:
+    image: bitnami/tensorflow-serving:2
+    volumes:
+      - ${PWD}/clothing-model:/bitnami/model-data/1
+      - 'tensorflow_serving_data:/bitnami'
+    ports:
+      - 8500:8500
+      - 8501:8501
+    environment:
+      - TENSORFLOW_SERVING_MODEL_NAME=clothing-model
+volumes:
+  tensorflow_serving_data:
+    driver: local

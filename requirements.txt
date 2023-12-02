@@ -7,3 +7,5 @@ gunicorn
 pipenv 
 xgboost
 tensorflow
+tensorflow-serving-api
+protobuf==3.20.3

@@ -11,3 +11,4 @@ pants.jpg
 .ipynb_checkpoints
 
 09-serverless/*.json
+10-tf-serving-kubernetes/clothing-model
