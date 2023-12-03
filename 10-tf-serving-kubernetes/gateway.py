@@ -1,4 +1,5 @@
 import json
+import os
 from io import BytesIO
 from urllib import request
 
@@ -7,11 +8,11 @@ import numpy as np
 import uvicorn
 from fastapi import FastAPI
 from PIL import Image
+from proto import np_to_protobuf
 from schemas import CLASSES, PredictionInput, PredictionOutput
 from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc
-from proto import np_to_protobuf
 
-SERVER_ADDRESS = "localhost"
+SERVER_ADDRESS = os.getenv('TF_SERVING_HOST', 'localhost')
 SERVER_PORT = 8500
 
 
