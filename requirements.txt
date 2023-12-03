@@ -9,3 +9,5 @@ xgboost
 tensorflow
 tensorflow-serving-api
 protobuf==3.20.3
+fastapi
+uvicorn
