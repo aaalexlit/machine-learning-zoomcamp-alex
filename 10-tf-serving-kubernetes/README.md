@@ -1,3 +1,7 @@
+## Split the workflow into pre-processing and prediction
+
+![](2-tier-ach.svg)
+
 ## Start the services in docker compose
 
 ```shell
@@ -210,3 +214,85 @@ curl -X POST 'http://127.0.0.1:8080/predict'  -H 'Content-Type: application/json
   "url": "http://bit.ly/mlbookcamp-pants"
 }'
 ```
+
+# Switching `kubectl` context 
+
+```shell
+# get available contexts
+kubectl config get-contexts   
+kubectl config use-context <cluster-name>
+```
+
+# Deploy to EKS
+
+to apply the config from [eks-config.yaml](k8s-config/eks-config.yaml) run
+```shell
+eksctl create cluster -f k8s-config/eks-config.yaml
+```
+
+Build x86 image for serving the model
+```shell
+docker build --platform linux/amd64 -t tf-serving-model:xception-x86-v1 -f image-model.dockerfile .
+```
+
+Create ECR if not exists, tag and push model and gateway images
+```shell
+./push-to-ecr.sh tf-serving-gateway:v001  
+./push-to-ecr.sh tf-serving-model:xception-x86-v1  
+```
+
+Check the newly created EKS cluster nodes
+```shell
+kubectl get nodes
+```
+
+Apply all the k8s configs
+```shell
+kubectl apply -f k8s-config/gateway-deployment-eks.yaml
+kubectl apply -f k8s-config/gateway-service.yaml
+kubectl apply -f k8s-config/model-deployment-eks.yaml
+kubectl apply -f k8s-config/model-service.yaml
+```
+
+Test it:
+```shell
+curl -X POST 'http://ad97926a1921442b3a818282a23fd113-979081882.us-west-2.elb.amazonaws.com/predict'  -H 'Content-Type: application/json' -d '{
+  "url": "http://bit.ly/mlbookcamp-pants"
+}'
+```
+
+Delete cluster
+```shell
+eksctl delete cluster --name mlzoomcamp-cluster
+```
+
+And delete ECR repo:
+```shell
+./destroy-infra.sh
+```
+
+If you deleted a cluster and you want to re-create it you first need to delete 
+CloudFormation stack created by eksctl
+```shell
+aws cloudformation delete-stack --stack-name eksctl-mlzoomcamp-cluster-cluster
+```
+
+https://stackoverflow.com/questions/70787520/your-current-user-or-role-does-not-have-access-to-kubernetes-objects-on-this-eks
+
+To be able to see the cluster on the AWS Console `aws-auth` configMaps
+needs to be edited:
+```shell
+kubectl edit configmap aws-auth -n kube-system
+```
+and the following part needs to be added 
+```yaml
+- "groups":
+  - "system:masters"
+  "rolearn": "arn:aws:iam::<aws-account-id>:role/<aws-role-name>"
+  "username": "<aws-username>"
+  ```
+
+  Alternatively, it can be done using `eksctl` in ClusterConfig:
+  https://eksctl.io/usage/iam-identity-mappings/
+
+  ![](k8s_cluster_on_aws.png)

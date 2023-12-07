@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tf-serving-clothing-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tf-serving-clothing-model
+  template:
+    metadata:
+      labels:
+        app: tf-serving-clothing-model
+    spec:
+      containers:
+      - name: tf-serving-clothing-model
+        image: 740446032364.dkr.ecr.us-west-2.amazonaws.com/mlzoomcamp-images:tf-serving-model-xception-x86-v1
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+        env:
+        - name: TENSORFLOW_SERVING_MODEL_NAME
+          value: clothing-model
+        ports:
+        - containerPort: 8500
