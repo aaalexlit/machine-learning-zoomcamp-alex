@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 REPO=clothing-tflite-images
 TAG=clothing-model-xception-v4-001
 FUNCTION_NAME=clothing-classification
