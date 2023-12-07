@@ -110,3 +110,103 @@ kubectl port-forward service/ping 8080:80
 # and check that there's a response
 curl http://localhost:8080/ping
 ```
+
+# Deploy gateway and tf-serving model on K8s
+
+## Tf-serving model
+
+Give images custom tags and make them available to kind
+
+```shell
+docker tag 10-tf-serving-kubernetes-tf_serving:latest tf-serving-model:xception-v4-001
+kind load docker-image tf-serving-model:xception-v4-001
+```
+
+and apply the [model-deployment.yaml](./k8s-config/model-deployment.yaml)
+```shell
+kubectl apply -f k8s-config/model-deployment.yaml
+```
+
+And test if the things work using port forwarding
+```shell
+kubectl port-forward tf-serving-clothing-model-7b64f8b64-pgv5j 8500:8500
+python gateway.py
+curl -X POST 'http://127.0.0.1:8000/predict'  -H 'Content-Type: application/json' -d '{
+  "url": "http://bit.ly/mlbookcamp-pants"
+}'
+```
+
+Then create the service
+```shell
+kubectl apply -f k8s-config/model-service.yaml
+```
+
+Then test again the service using port-forwarding
+```shell
+kubectl port-forward service/tf-serving-clothing-model 8500:8500
+python gateway.py
+curl -X POST 'http://127.0.0.1:8000/predict'  -H 'Content-Type: application/json' -d '{
+  "url": "http://bit.ly/mlbookcamp-pants"
+}'
+```
+
+## Gateway
+
+```shell
+docker tag 10-tf-serving-kubernetes-gateway:latest tf-serving-gateway:v001 
+kind load docker-image tf-serving-gateway:v001 
+```
+
+How to specify DNS of the tf-serving service in k8s:
+<name-of-service>.<namespace>.svc.cluster.local
+
+So, in our case it's
+tf-serving-clothing-model.default.svc.cluster.local
+
+To test if this works we'll enter the ping pod and execute bash there using the following commands:
+```shell
+kubectl exec -it ping-deployment-86946bb9f4-bmhcm -- bash 
+```
+
+And then inside the pod's bash
+```shell
+apt update
+apt install curl
+# check that it worked
+curl localhost:9696/ping
+# then do it through the "network"
+curl ping.default.svc.cluster.local/ping
+# to check grpc we'll install telnet
+curl tf-serving-clothing-model.default.svc.cluster.local:8500
+# we get curl: (1) Received HTTP/0.9 when not allowed but it shows that something is running there so we're good
+# optionally
+apt install telnet
+telnet tf-serving-clothing-model.default.svc.cluster.local 8500
+```
+
+Finally apply the gateway-deployment:
+
+```shell
+kubectl apply -f k8s-config/gateway-deployment.yaml 
+```
+
+Again, forward the port and test
+```shell
+kubectl port-forward gateway-5579ff6cb5-mmnzz 8080:80
+curl -X POST 'http://127.0.0.1:8080/predict'  -H 'Content-Type: application/json' -d '{
+  "url": "http://bit.ly/mlbookcamp-pants"
+}'
+```
+
+And lastly create gateway-service
+```shell
+kubectl apply -f k8s-config/gateway-service.yaml
+```
+
+and test it
+```shell
+kubectl port-forward svc/gateway 8080:80  
+curl -X POST 'http://127.0.0.1:8080/predict'  -H 'Content-Type: application/json' -d '{
+  "url": "http://bit.ly/mlbookcamp-pants"
+}'
+```

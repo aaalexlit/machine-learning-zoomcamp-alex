@@ -12,7 +12,7 @@ from proto import np_to_protobuf
 from schemas import CLASSES, PredictionInput, PredictionOutput
 from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc
 
-SERVER_ADDRESS = os.getenv('TF_SERVING_HOST', 'localhost')
+SERVER_ADDRESS = os.getenv("TF_SERVING_HOST", "localhost")
 SERVER_PORT = 8500
 
 
@@ -59,12 +59,10 @@ def prepare_request(X):
 
     # Set the model name and input tensor data
     pb_request.model_spec.name = MODEL_NAME
-    pb_request.model_spec.signature_name = 'serving_default'
+    pb_request.model_spec.signature_name = "serving_default"
 
     # Serialize the example proto to bytes and set it in the request
-    pb_request.inputs[INPUT_TENSOR_NAME].CopyFrom(
-        np_to_protobuf(X)
-    )
+    pb_request.inputs[INPUT_TENSOR_NAME].CopyFrom(np_to_protobuf(X))
     return pb_request
 
 
@@ -84,5 +82,6 @@ def predict(input_data: PredictionInput) -> PredictionOutput:
 
 if __name__ == "__main__":
     # url = "http://bit.ly/mlbookcamp-pants"
-    # print(predict(url))
+    # input_data = {"url": url}
+    # print(predict(PredictionInput(**input_data)))
     uvicorn.run("gateway:app", reload=True)
